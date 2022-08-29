@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="https://www.thymeleafe.org">
+<head>
+  <meta charset="ISO-8859-1">
+  <title>Population Genetics A Concise Guide -- John H. Gillespie</title>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet"
+        href="https://code.highcharts.com/css/highcharts.css" />
+  <script
+          src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script
+          src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+</head>
+<body>
+<div align="center">
+  <h2>Population Genetics A Concise Guide -- John H. Gillespie</h2>
+</div>
+<figure class="highcharts-figure">
+  <div id="container"></div>
+</figure>
+<script type="text/javascript">
+        $(document).ready(
+                function() {
+                    var trials = getUrlParameter('trials')  ?  getUrlParameter('trials') : "20";
+                    var population = getUrlParameter('population')  ?  getUrlParameter('population') : "40";
+                    var initFrequency = getUrlParameter('initFrequency')  ?  getUrlParameter('initFrequency') : "0.2";
+                    var generations = getUrlParameter('generations')  ?  getUrlParameter('generations') : "100";
+                    console.log(initFrequency);
+                    $.ajax({
+                        url : "/get-simulation-data",
+                        type: 'POST',
+                        data:{'trials' : trials,
+                              'population' : population,
+                              'initFrequency' : initFrequency,
+                              'generations' : generations},
+                        success : function(result) {
+                            var simulation = {};
+                            var allSimulations = [];
+                            console.log(result);
+                            Object.keys(result).forEach(
+                                    function(key) {
+                                        simulation.name = [key];
+                                        simulation.data = Array.from(result[key]);
+                                        allSimulations.push({...simulation});
+                                    });
+                            drawChart(allSimulations, trials, population, initFrequency, generations);
+                        }
+                    });
+                });
+        function drawChart(allSimulations, trials, population, initFrequency, generations) {
+            Highcharts.chart('container', {
+                 title: {
+        text: 'Genetic Drift Simulation '
+    },
+
+    subtitle: {
+        text: 'Trials: ' + trials + ' Population: ' + population + ' initial frequency: ' + initFrequency + ' generations: ' + generations
+    },
+
+    yAxis: {
+        title: {
+            text: 'Frequency'
+        }
+    },
+
+    xAxis: {
+        accessibility: {
+            rangeDescription: 'Range: 0 to ' + generations
+        }
+    },
+
+    legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+    },
+
+    plotOptions: {
+        series: {
+            label: {
+                connectorAllowed: false
+            },
+            pointStart: 0
+        }
+    },
+
+                series : allSimulations,
+
+                responsive: {
+        rules: [{
+            condition: {
+                maxWidth: 500
+            },
+            chartOptions: {
+                legend: {
+                    layout: 'horizontal',
+                    align: 'center',
+                    verticalAlign: 'bottom'
+                }
+            }
+        }]
+    }
+
+
+            });
+        }
+
+     var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+    return false;
+};
+
+    </script>
+</body>
+</html>
